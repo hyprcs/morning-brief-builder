@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Morning Brief Builder</title>
+<meta name="description" content="Answer five easy questions and get a ready-made set of instructions that tells an AI assistant how to build your own daily morning brief.">
+<meta property="og:title" content="Morning Brief Builder">
+<meta property="og:description" content="Five easy questions, then an AI assistant builds a morning brief made just for you.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#FBF8F2">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23FBF8F2'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23B5532F' stroke-width='2.2'/%3E%3Cg stroke='%23B5532F' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M16 4v3M16 25v3M4 16h3M25 16h3M7.5 7.5l2.1 2.1M22.4 22.4l2.1 2.1M24.5 7.5l-2.1 2.1M9.6 22.4l-2.1 2.1'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#FBF8F2; --card:#FFFFFF; --wash:#F4EFE6; --ink:#2A2824; --soft:#5F5D56; --hair:#E2DCCF;
+  --btn:#B5532F; --btn-hover:#9A4425; --accent-text:#A84A28; --accent-wash:#F9E9E0; --ring:rgba(181,83,47,.35);
+  --serif:Georgia,"Iowan Old Style","Palatino Linotype",Palatino,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#1C1B19; --card:#262421; --wash:#2F2C28; --ink:#F2EEE6; --soft:#B9B4A9; --hair:#423E38;
+    --accent-text:#EDA283; --accent-wash:#3B2A22; --ring:rgba(237,162,131,.4);
+  }
+}
+*{box-sizing:border-box}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--soft);font-family:var(--sans);font-size:18px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+h1:focus{outline:none}
+
+.top{padding:18px 16px 0}
+.top-in,.wrap,.nav-in{max-width:760px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:700;color:var(--ink);font-size:18px}
+.brand svg{flex:none}
+.progress{margin-top:16px}
+.progress-text{font-size:15px;margin:0 0 8px}
+.bar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.bar span{height:6px;border-radius:3px;background:var(--hair)}
+.bar span.on{background:var(--btn)}
+
+main{flex:1;padding:24px 16px 32px}
+h1{font-family:var(--serif);font-weight:700;color:var(--ink);font-size:clamp(28px,6.2vw,40px);line-height:1.15;margin:8px 0 14px;text-wrap:balance}
+h2{font-family:var(--sans);font-weight:700;color:var(--ink);font-size:19px;margin:30px 0 10px}
+p{margin:0 0 14px}
+.lead{font-size:20px;max-width:34em}
+.hint{font-size:16px;margin-top:8px}
+.opt{font-weight:400;color:var(--soft)}
+strong{color:var(--ink)}
+
+.panel{background:var(--card);border:1px solid var(--hair);border-radius:16px;padding:20px}
+.panel + .panel{margin-top:14px}
+
+/* welcome */
+.hero{display:grid;gap:28px;align-items:start}
+@media (min-width:720px){.hero{grid-template-columns:1.15fr .85fr}}
+.how{list-style:none;padding:0;margin:22px 0;display:grid;gap:12px;counter-reset:n}
+.how li{counter-increment:n;display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start}
+.how li::before{content:counter(n);width:40px;height:40px;border-radius:50%;background:var(--accent-wash);color:var(--accent-text);font-weight:700;display:grid;place-items:center}
+.how li span{padding-top:5px}
+.cap{font-size:15px;text-align:center;margin:10px 0 0}
+
+/* form fields */
+.field{display:block;margin-top:22px}
+.field > span,.legend{display:block;font-weight:700;color:var(--ink);margin-bottom:8px}
+input[type=text],select{width:100%;min-height:54px;padding:12px 14px;border:2px solid var(--hair);border-radius:12px;background:var(--card);color:var(--ink)}
+input[type=text]::placeholder{color:var(--soft);opacity:.75}
+input[type=text]:focus,select:focus{border-color:var(--btn);outline:none;box-shadow:0 0 0 4px var(--ring)}
+
+/* segmented choices */
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{flex:1 1 0;min-width:120px;min-height:54px;padding:10px 12px;border:2px solid var(--hair);border-radius:12px;background:var(--card);color:var(--ink);font-weight:600;line-height:1.25}
+.seg.stack{flex-direction:column}
+.seg.stack button{text-align:left;padding:14px 16px;flex:none}
+.seg button small{display:block;font-weight:400;color:var(--soft);font-size:15px;margin-top:2px}
+.seg button[aria-pressed=true],.chip[aria-pressed=true],.vibe[aria-pressed=true]{border-color:var(--btn);background:var(--accent-wash)}
+.seg button[aria-pressed=true]::before{content:"✓ ";color:var(--accent-text)}
+
+/* interest chips */
+.group-title{font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin:28px 0 10px}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:10px}
+.chip{display:flex;align-items:center;gap:10px;min-height:60px;padding:10px 12px;border:2px solid var(--hair);border-radius:14px;background:var(--card);color:var(--ink);font-weight:600;text-align:left;line-height:1.2;position:relative}
+.chip .ico,.rate-head .ico{font-size:24px;line-height:1;flex:none}
+.chip[aria-pressed=true]::after{content:"✓";position:absolute;top:4px;right:8px;font-size:14px;font-weight:700;color:var(--accent-text)}
+.addrow{display:flex;gap:10px}
+.addrow input{flex:1;min-width:0}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:56px;padding:12px 24px;border-radius:14px;border:2px solid var(--btn);background:var(--btn);color:#fff;font-weight:700;text-decoration:none;line-height:1.2}
+.btn:hover{background:var(--btn-hover);border-color:var(--btn-hover)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--hair)}
+.btn.ghost:hover{border-color:var(--soft);background:transparent}
+.btn.big{width:100%;font-size:21px;min-height:68px}
+.linkbtn{background:none;border:0;padding:8px 0;color:var(--accent-text);text-decoration:underline;text-underline-offset:3px}
+
+/* rating */
+.rate-card{background:var(--card);border:1px solid var(--hair);border-radius:16px;padding:16px;margin-top:12px}
+.rate-head{display:flex;align-items:center;gap:10px;color:var(--ink);font-weight:700;margin-bottom:12px}
+.rate-card .seg button{min-width:90px;min-height:50px}
+.note{display:block;margin-top:12px;font-size:16px}
+.note > span{display:block;margin-bottom:6px}
+.note input{min-height:50px}
+
+/* colour vibes */
+.vibes{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.vibe{display:grid;grid-template-columns:56px 1fr;gap:12px;align-items:center;padding:12px;border:2px solid var(--hair);border-radius:14px;background:var(--card);text-align:left;color:var(--ink);min-height:84px}
+.vibe b{display:block;line-height:1.2}
+.vibe small{display:block;color:var(--soft);font-size:14.5px;line-height:1.3;margin-top:3px}
+.sw{width:56px;height:56px;border-radius:12px;border:1px solid rgba(128,128,128,.35);padding:9px 8px;display:flex;flex-direction:column;gap:5px;justify-content:center}
+.sw i{display:block;height:5px;border-radius:3px}
+.sw i:first-child{width:16px;height:16px;border-radius:50%;margin-bottom:1px}
+.sw.q{align-items:center;font-size:26px;background:var(--wash)}
+.preview-wrap{max-width:380px;margin:0 auto}
+.look{display:grid;gap:8px}
+@media (min-width:720px){
+  .look{grid-template-columns:1fr 290px;gap:28px;align-items:start}
+  .look-side{position:sticky;top:12px}
+  .look-side h2{margin-top:0}
+}
+
+/* sample brief */
+.brief{background:var(--b-bg);color:var(--b-soft);border:1px solid var(--b-hair);border-radius:16px;overflow:hidden;font-size:13px;line-height:1.4;box-shadow:0 10px 30px rgba(0,0,0,.10)}
+.b-top{background:var(--b-wash);padding:18px 18px 12px;border-bottom:1px solid var(--b-hair)}
+.b-date{font-size:11.5px;letter-spacing:.03em}
+.b-head{font-family:var(--serif);font-weight:700;color:var(--b-ink);font-size:21px;line-height:1.2;margin:6px 0 8px}
+.b-top svg{display:block;width:100%;height:auto}
+.b-body{padding:16px 18px 20px;display:grid;gap:16px}
+.b-title{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--b-ink)}
+.b-sec i{display:block;height:7px;border-radius:4px;background:var(--b-hair);margin-top:7px}
+.b-sec i.a{background:var(--b-accent);opacity:.8}
+.b-more{font-size:12px}
+.brief.big{font-size:15px}
+.brief.big .b-head{font-size:24px}
+.brief.big .b-title{font-size:12.5px}
+.brief.big .b-sec i{height:10px;margin-top:9px}
+
+/* result */
+.todo{list-style:none;padding:0;margin:18px 0 20px;counter-reset:n;display:grid;gap:14px}
+.todo li{counter-increment:n;display:grid;grid-template-columns:40px 1fr;gap:12px}
+.todo li::before{content:counter(n);width:40px;height:40px;border-radius:50%;background:var(--btn);color:#fff;font-weight:700;display:grid;place-items:center}
+.status{min-height:1.6em;font-weight:700;color:var(--accent-text);text-align:center;margin:12px 0 0}
+.actions{display:grid;gap:10px}
+details{margin-top:14px;border:1px solid var(--hair);border-radius:16px;background:var(--card)}
+summary{padding:16px 20px;font-weight:700;color:var(--ink);cursor:pointer;min-height:56px}
+pre{margin:0;padding:4px 20px 20px;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14.5px;line-height:1.55;color:var(--ink)}
+.tips{padding-left:22px;margin:0}
+.tips li{margin-bottom:10px}
+.tips li:last-child{margin-bottom:0}
+.endlinks{display:flex;flex-wrap:wrap;gap:6px 24px;margin-top:18px}
+
+/* bottom nav */
+.nav{position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--hair);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+.nav-in{display:flex;gap:12px;align-items:center}
+.nav .btn{flex:1}
+.nav .btn.ghost{flex:0 0 auto}
+.nav-msg{max-width:760px;margin:0 auto 10px;font-weight:700;color:var(--accent-text)}
+.nav-msg:empty{display:none}
+
+footer{padding:18px 16px 26px;font-size:15px;text-align:center}
+@media (prefers-reduced-motion:no-preference){
+  .btn,.chip,.vibe,.seg button{transition:background-color .12s,border-color .12s}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="6" fill="none" stroke="var(--btn)" stroke-width="2.2"/><g stroke="var(--btn)" stroke-width="2.2" stroke-linecap="round"><path d="M16 4v3M16 25v3M4 16h3M25 16h3M7.5 7.5l2.1 2.1M22.4 22.4l2.1 2.1M24.5 7.5l-2.1 2.1M9.6 22.4l-2.1 2.1"/></g></svg>
+      Morning Brief Builder
+    </div>
+    <div class="progress" id="progress" hidden>
+      <p class="progress-text" id="progressText"></p>
+      <div class="bar" id="bar" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+  </div>
+</header>
+
+<main><div class="wrap" id="view"></div></main>
+
+<div class="nav" id="nav">
+  <p class="nav-msg" id="navMsg" role="status" aria-live="polite"></p>
+  <div class="nav-in">
+    <button class="btn ghost" id="backBtn" data-act="back">Back</button>
+    <button class="btn" id="nextBtn" data-act="next">Next</button>
+  </div>
+</div>
+
+<footer>Your answers stay on this device. This page does not collect or send anything.</footer>
+
+<noscript><p style="padding:16px;text-align:center">This page needs JavaScript switched on to work.</p></noscript>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- things people can choose ---------- */
+
+var GROUPS = [
+  {id:'day',   title:'Your day',                 hint:'Your assistant will help you connect your calendar or email. It only reads them. It never sends anything.'},
+  {id:'world', title:'The world around you'},
+  {id:'enjoy', title:'Things you enjoy'},
+  {id:'extra', title:'A little something extra'}
+];
+
+var INTERESTS = [
+  {id:'calendar', g:'day', icon:'📅', name:"Today's calendar", line:"what is on my calendar today, plus anything tomorrow that I should get ready for", ask:'e.g. remind me when to leave for appointments'},
+  {id:'email', g:'day', icon:'✉️', name:'Emails that need me', line:"emails from the last two days that are waiting on a reply or an action from me. Skip newsletters, adverts and anything I have already dealt with", ask:'e.g. always show emails from my daughter'},
+  {id:'birthdays', g:'day', icon:'🎂', name:'Birthdays & occasions', line:"birthdays, anniversaries and special dates coming up in the next week, so I have time to get a card", ask:'e.g. Mum 12 March, Jo and Pat 4 June'},
+
+  {id:'weather', g:'world', icon:'🌤️', name:'Weather', line:"today's forecast for where I live, a plain tip on what to wear or carry, and a quick look at tomorrow", ask:'e.g. tell me if it is a good day to hang out washing'},
+  {id:'news', g:'world', icon:'📰', name:'Top news', line:"the three or four biggest news stories this morning, one or two lines each", ask:'e.g. my own country first, no celebrity gossip'},
+  {id:'local', g:'world', icon:'📍', name:'Local news & events', line:"news from near where I live and anything on this week", ask:'e.g. markets, live music, council notices'},
+  {id:'sport', g:'world', icon:'⚽', name:'Sport', line:"the latest results, upcoming games and news", ask:'Which teams or sports? e.g. Liverpool, cricket'},
+  {id:'money', g:'world', icon:'💰', name:'Money & markets', line:"how the markets moved and the prices I follow", ask:'Which prices? e.g. the share market, gold, Bitcoin'},
+  {id:'tech', g:'world', icon:'💻', name:'Technology', line:"the most interesting technology news, explained in plain words", ask:'e.g. new phones, AI, gadgets'},
+  {id:'science', g:'world', icon:'🔭', name:'Science & nature', line:"one or two interesting science or nature stories", ask:'e.g. space, wildlife, what is in the night sky'},
+
+  {id:'garden', g:'enjoy', icon:'🌱', name:'Gardening', line:"what to do in the garden this week for my local season and climate", ask:'e.g. veggies, roses, pots on a balcony'},
+  {id:'food', g:'enjoy', icon:'🍳', name:'Food & recipes', line:"one dinner idea for tonight, with a link to the recipe", ask:'e.g. vegetarian, quick weeknight meals'},
+  {id:'books', g:'enjoy', icon:'📚', name:'Books', line:"a book recommendation or a notable new release", ask:'e.g. crime novels, history, biographies'},
+  {id:'screen', g:'enjoy', icon:'🎬', name:'Film & TV', line:"something worth watching that is new in cinemas or on streaming", ask:'e.g. Netflix only, no horror'},
+  {id:'music', g:'enjoy', icon:'🎵', name:'Music', line:"new releases, tours and news from music I like", ask:'Which artists or styles? e.g. jazz, Fleetwood Mac'},
+  {id:'travel', g:'enjoy', icon:'✈️', name:'Travel', line:"a travel idea, deal or piece of news worth knowing", ask:'e.g. weekend trips nearby, Italy'},
+  {id:'health', g:'enjoy', icon:'🧘', name:'Health & wellbeing', line:"one practical health or wellbeing tip or news item from a trustworthy source", ask:'e.g. walking, sleep, healthy eating'},
+
+  {id:'goodnews', g:'extra', icon:'☀️', name:'A good-news story', line:"one genuinely uplifting news story"},
+  {id:'history', g:'extra', icon:'🕰️', name:'On this day', line:"one interesting thing that happened on this day in history"},
+  {id:'word', g:'extra', icon:'🔤', name:'Word of the day', line:"an interesting word with its meaning and an example sentence"},
+  {id:'quote', g:'extra', icon:'💬', name:'A thought for the day', line:"a short quote or thought to start the day, with who said it"},
+  {id:'trivia', g:'extra', icon:'🧩', name:'A quick quiz question', line:"one trivia question, with the answer tucked away at the very bottom of the page"}
+];
+
+var VIBES = [
+  {id:'paper',    name:'Warm paper',   desc:'Cream and terracotta. Calm, like a good notebook.', say:'a cream background with charcoal text and terracotta touches', bg:'#FBF8F2', wash:'#F4EFE6', ink:'#2E2C27', soft:'#6B6A63', hair:'#E4DFD3', accent:'#C6613F'},
+  {id:'sky',      name:'Morning sky',  desc:'Pale blues. Fresh and clear.', say:'a very pale blue background with navy text and sky-blue touches', bg:'#F6FAFD', wash:'#E8F1F8', ink:'#1E2F40', soft:'#5A6B7B', hair:'#D5E2EC', accent:'#2F7FC1'},
+  {id:'garden',   name:'Garden',       desc:'Soft greens. Gentle and leafy.', say:'a soft sage background with deep green text and leaf-green touches', bg:'#F7FAF4', wash:'#EAF1E3', ink:'#24331F', soft:'#5E6B57', hair:'#D7E1CE', accent:'#4F8A3C'},
+  {id:'sunrise',  name:'Sunrise',      desc:'Peach and rose. Soft and rosy.', say:'a soft peach background with warm brown text and rose-pink touches', bg:'#FFF7F5', wash:'#FFE9E4', ink:'#3A2A2C', soft:'#7A6266', hair:'#F3D8D3', accent:'#D94F76'},
+  {id:'lavender', name:'Lavender',     desc:'Soft purples. Quiet and dreamy.', say:'a pale lilac background with deep plum text and violet touches', bg:'#FAF8FD', wash:'#EFEAF8', ink:'#2D2640', soft:'#665E7A', hair:'#DED6EE', accent:'#7B5CC4'},
+  {id:'sunny',    name:'Bright & cheerful', desc:'Sunny yellow and teal. Happy.', say:'a warm white background with sunny yellow panels, dark slate text and teal touches', bg:'#FFFDF5', wash:'#FFF1BF', ink:'#23303A', soft:'#5C6870', hair:'#EFE2AC', accent:'#0E8F9B'},
+  {id:'news',     name:'Newspaper',    desc:'Black and white. Classic, no fuss.', say:'a white background with black text like a classic newspaper, and a small touch of red', bg:'#FFFFFF', wash:'#F3F3F1', ink:'#111111', soft:'#555555', hair:'#DDDDDD', accent:'#B3261E'},
+  {id:'night',    name:'Night owl',    desc:'Dark with a warm glow. Easy on the eyes.', say:'a dark charcoal background with soft off-white text and amber touches', bg:'#1B1D22', wash:'#24272E', ink:'#F1EEE6', soft:'#A9A79F', hair:'#383C45', accent:'#F0B254'}
+];
+
+var TONES = {
+  warm:   {label:'Warm and friendly', sub:'Like a friend handing you the day', say:'Warm and friendly, like a friend handing me the day.'},
+  plain:  {label:'Short and to the point', sub:'Just the facts, no chit-chat', say:'Short and to the point. Just the facts, no chit-chat.'},
+  cheery: {label:'Cheerful', sub:'Upbeat, with a little gentle humour', say:'Cheerful and upbeat, with a little gentle humour.'}
+};
+var LENGTHS = {
+  short:  {label:'Quick', sub:'About a one-minute read', say:'Keep it brief: about a one-minute read.'},
+  medium: {label:'A bit more detail', sub:'About a three-minute read', say:'A little more detail is welcome: about a three-minute read.'}
+};
+var AIS = {
+  claude:  {label:'Claude',  name:'Claude',  base:'https://claude.ai/new',        q:'https://claude.ai/new?q='},
+  chatgpt: {label:'ChatGPT', name:'ChatGPT', base:'https://chatgpt.com/',          q:'https://chatgpt.com/?q='},
+  gemini:  {label:'Gemini',  name:'Gemini',  base:'https://gemini.google.com/app', q:null},
+  other:   {label:'Another one', name:'your assistant', base:null, q:null}
+};
+var STEP_NAMES = ['', 'About you', 'What goes in', 'What matters most', 'Colours', 'Voice'];
+var LAST_Q = 5, RESULT = 6;
+var MAX_URL = 10000;
+
+/* ---------- saved answers ---------- */
+
+var KEY = 'morning-brief-builder-v1';
+function fresh(){
+  return {step:0, name:'', place:'', time:'7:00 am', days:'every', picks:[], custom:[], rate:{}, notes:{},
+          extras:'yes', vibe:'paper', ownVibe:'', size:'std', tone:'warm', length:'short', leave:'', ai:'claude'};
+}
+var state = fresh();
+try{
+  var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+  if(saved && typeof saved === 'object'){ for(var k in state){ if(saved[k] !== undefined && typeof saved[k] === typeof state[k]) state[k] = saved[k]; } }
+}catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+/* ---------- helpers ---------- */
+
+var view = document.getElementById('view');
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function clean(s){ return String(s || '').replace(/\s+/g,' ').trim(); }
+function byId(id){
+  for(var i=0;i<INTERESTS.length;i++) if(INTERESTS[i].id === id) return INTERESTS[i];
+  for(var j=0;j<state.custom.length;j++) if(state.custom[j].id === id){
+    return {id:id, icon:'⭐', name:state.custom[j].name, line:'the latest news and anything new or useful on this', ask:'e.g. what exactly you would like to hear about', custom:true};
+  }
+  return null;
+}
+function chosen(){ return state.picks.map(byId).filter(Boolean); }
+function ranked(){
+  var items = chosen();
+  return [3,2,1].map(function(r){ return items.filter(function(it){ return (state.rate[it.id] || 2) === r; }); });
+}
+function vibe(){ for(var i=0;i<VIBES.length;i++) if(VIBES[i].id === state.vibe) return VIBES[i]; return null; }
+function seg(key, opts, cls){
+  return '<div class="seg '+(cls||'')+'" role="group">' + opts.map(function(o){
+    return '<button type="button" data-act="set" data-k="'+key+'" data-v="'+o.v+'" aria-pressed="'+(state[key] === o.v)+'">'+esc(o.label)+(o.sub ? '<small>'+esc(o.sub)+'</small>' : '')+'</button>';
+  }).join('') + '</div>';
+}
+function times(){
+  var out = [];
+  for(var h=5; h<=10; h++){ out.push(h+':00 am'); out.push(h+':30 am'); }
+  return out;
+}
+
+/* ---------- the little sample brief ---------- */
+
+function briefHTML(opts){
+  var v = opts.vibe || VIBES[0];
+  var date = new Date().toLocaleDateString(undefined, {weekday:'long', day:'numeric', month:'long'});
+  var name = clean(opts.name);
+  var secs = opts.items.slice(0,5).map(function(it, i){
+    var lines = it.rate === 3 ? ['94%','82%','58%'] : it.rate === 1 ? ['64%'] : ['90%','52%'];
+    return '<div class="b-sec"><div class="b-title">'+esc(it.name)+'</div>' +
+      lines.map(function(w, j){ return '<i'+(i === 0 && j === lines.length-1 ? ' class="a"' : '')+' style="width:'+w+'"></i>'; }).join('') + '</div>';
+  }).join('');
+  var more = opts.items.length > 5 ? '<div class="b-more">and '+(opts.items.length-5)+' more below</div>' : '';
+  return '<div class="brief'+(opts.big ? ' big' : '')+'" style="--b-bg:'+v.bg+';--b-wash:'+v.wash+';--b-ink:'+v.ink+';--b-soft:'+v.soft+';--b-hair:'+v.hair+';--b-accent:'+v.accent+'" role="img" aria-label="A sketch of how a morning brief could look">' +
+    '<div class="b-top"><div class="b-date">'+esc(date)+'</div>' +
+    '<div class="b-head">Good morning'+(name ? ', '+esc(name) : '')+'. Here is your day.</div>' +
+    '<svg viewBox="0 0 320 46" aria-hidden="true"><path d="M0 38 C 60 37, 110 39, 170 38 S 270 37, 320 38" fill="none" stroke="'+v.ink+'" stroke-width="1.4" stroke-linecap="round"/><circle cx="52" cy="20" r="8" fill="none" stroke="'+v.accent+'" stroke-width="1.6"/><g stroke="'+v.accent+'" stroke-width="1.4" stroke-linecap="round"><path d="M52 5v3M52 32v3M37 20h3M64 20h3M41.5 9.500l2 2M60.500 28.500l2 2M62.500 9.500l-2 2M43.500 28.500l-2 2"/></g><g fill="none" stroke="'+v.ink+'" stroke-width="1.2" stroke-linecap="round"><path d="M248 18q4-4 8 0q4-4 8 0M268 9q3.500-3.500 7 0q3.500-3.500 7 0"/></g></svg></div>' +
+    '<div class="b-body">'+secs+more+'</div></div>';
+}
+function myPreview(){
+  var items = [];
+  ranked().forEach(function(list, i){ list.forEach(function(it){ items.push({name:it.name, rate:3-i}); }); });
+  return briefHTML({vibe:vibe(), name:state.name, items:items, big:state.size === 'big'});
+}
+
+/* ---------- the instructions we write for the assistant ---------- */
+
+function buildPrompt(){
+  var L = [], name = clean(state.name), place = clean(state.place), leave = clean(state.leave);
+  var has = function(id){ return state.picks.indexOf(id) > -1; };
+  var when = (state.days === 'week' ? 'Monday to Friday' : 'every day') + ' at ' + state.time;
+  var conn = [has('calendar') ? 'calendar' : '', has('email') ? 'email' : ''].filter(Boolean).join(' and ');
+
+  L.push('Please set up a personal morning brief for me.', '');
+  L.push("I'm not very technical, so please use plain, friendly language, give me one small step at a time, and never assume I know where a button or setting is.", '');
+
+  L.push('ABOUT ME');
+  if(name) L.push('- My name: ' + name);
+  if(place) L.push('- Where I live: ' + place + ' (use this for weather, local information and my time zone)');
+  else L.push("- Where I live: I haven't said. If anything below needs my location, ask me once before you start.");
+  L.push('- When I want my brief: ' + when, '');
+
+  L.push('WHAT I WANT IN IT');
+  L.push('These are in order of importance. Keep this order on the page.', '');
+  var heads = ['Matters most to me (put these first and give them the most space):',
+               'Good to have (a short section each):',
+               'Only a quick mention (one line each, and only when there is something worth knowing):'];
+  var n = 0;
+  ranked().forEach(function(list, i){
+    if(!list.length) return;
+    L.push(heads[i]);
+    list.forEach(function(it){
+      n++;
+      var note = clean(state.notes[it.id]);
+      L.push(n + '. ' + it.name + ': ' + it.line + '.' + (note ? ' My note: ' + note : ''));
+    });
+    L.push('');
+  });
+
+  L.push('USE WHAT YOU ALREADY KNOW ABOUT ME');
+  L.push('- Before you build anything, check your memory of me and our past conversations.');
+  L.push('- Use it to make this brief truly mine: my routines, the people, places and things I care about, and how I like things written. Where an answer above is general, make it specific using what you know.');
+  L.push('- If what you remember disagrees with what I have written here, go with what is written here.');
+  if(state.extras === 'yes') L.push('- Add one or two extra things you think I would love that I did not list, and label them as your suggestion.');
+  L.push('- After the first brief, tell me in a line or two what you used from memory, so I can correct anything.');
+  L.push('- If you have no memory of me, just use what is above.', '');
+
+  L.push('HOW IT SHOULD LOOK');
+  L.push('- One nicely designed page that is easy to read on a phone, not a plain chat message. If you can create a formatted page or document, please do.');
+  var v = vibe(), own = clean(state.ownVibe);
+  if(state.vibe === 'own' && own) L.push('- Colours: in my own words, "' + own + '". Choose specific colours that match this and keep them the same every day.');
+  else if(v) L.push('- Colours: "' + v.name + '", meaning ' + v.say + '. Background ' + v.bg + ', main text ' + v.ink + ', accent ' + v.accent + '. Use the accent sparingly, and keep the colours the same every day.');
+  else L.push('- Colours: choose a calm, attractive colour scheme that suits my interests, and keep it the same every day.');
+  L.push(state.size === 'big'
+    ? '- Text size: large. I find bigger text easier to read, so make it clearly larger than normal, with plenty of space between lines.'
+    : '- Text size: comfortable to read on a phone without zooming in.');
+  L.push('- Start with today\'s date and a one-line greeting' + (name ? ' that uses my name' : '') + ', then the sections above.', '');
+
+  L.push('HOW IT SHOULD SOUND');
+  L.push('- ' + TONES[state.tone].say);
+  L.push('- ' + LENGTHS[state.length].say, '');
+
+  L.push('RULES');
+  L.push('- Look up today\'s information (search the web) instead of relying on memory, and put a small link to the source next to each item so I can check it.');
+  L.push('- Never make anything up. If you cannot find or cannot access something, leave that part out and tell me so in one line at the bottom.');
+  L.push('- If a section has nothing new today, skip it rather than filling space.');
+  L.push('- Only read and summarise. Never send, reply, buy, delete or change anything for me.' + (has('email') ? ' If an email needs a reply you may offer to help me draft one, but I will always send it myself.' : ''));
+  if(leave) L.push('- Leave out: ' + leave);
+  L.push('');
+
+  L.push('WHAT TO DO NOW');
+  var s = 1;
+  L.push((s++) + '. Do not start with a list of questions. Make today\'s brief straight away from what is above, so I can see it.' + (conn ? ' If you cannot see my ' + conn + ' yet, make the rest of the brief first and leave that part for later.' : ''));
+  L.push((s++) + '. Then ask me, in one short line, whether I would like anything changed.');
+  if(conn) L.push((s++) + '. Next, help me connect my ' + conn + ' so that part works. Tell me exactly where to tap or click, one step at a time, and wait for me to say "done" before giving the next step.');
+  L.push((s++) + '. Finally, help me make this arrive on its own ' + when + '. If you can schedule it yourself, offer to and ask me to confirm. If I need to change a setting, guide me one small step at a time. If you cannot schedule things, or it needs a paid plan, tell me honestly and give me the simplest alternative, such as a short phrase I can type each morning to get my brief.');
+  L.push((s++) + '. Whichever way we set it up, write everything the daily version needs into its instructions, including the personal details you took from memory, so it works on its own every morning.');
+  return L.join('\n');
+}
+
+/* ---------- screens ---------- */
+
+var views = [
+
+  function welcome(){
+    var sample = briefHTML({vibe:VIBES[0], name:'Sam', items:[{name:'Weather',rate:3},{name:"Today's calendar",rate:2},{name:'Gardening',rate:2},{name:'On this day',rate:1}]});
+    return '<div class="hero"><div>' +
+      '<h1 tabindex="-1">A morning brief, made just for you</h1>' +
+      '<p class="lead">Picture one short page waiting for you each morning: your day ahead, the weather, and the things you actually care about. An AI assistant can put it together for you. This page helps you tell it what you want.</p>' +
+      '<ol class="how"><li><span><strong>Answer five easy questions.</strong> It takes about three minutes.</span></li>' +
+      '<li><span><strong>We write the instructions.</strong> Your answers become a ready-made message for an AI assistant.</span></li>' +
+      '<li><span><strong>Hand them over.</strong> One tap, and the assistant builds your brief, using what it already knows about you, then helps you get it every morning.</span></li></ol>' +
+      '<p>You do not need to know anything technical.</p>' +
+      '</div><div><div class="preview-wrap">' + sample + '</div><p class="cap">A sketch of a finished brief. Yours will have your own sections and colours.</p></div></div>';
+  },
+
+  function you(){
+    return '<h1 tabindex="-1">First, a little about you</h1>' +
+      '<p class="lead">This helps your brief greet you properly and get the weather right. If your assistant already knows you, it will fill in the rest from memory.</p>' +
+      '<label class="field"><span>Your first name <span class="opt">(optional)</span></span><input type="text" data-field="name" value="'+esc(state.name)+'" autocomplete="given-name" maxlength="40" placeholder="e.g. Sam"></label>' +
+      '<label class="field"><span>Where do you live? <span class="opt">(town and country is plenty)</span></span><input type="text" data-field="place" value="'+esc(state.place)+'" maxlength="80" placeholder="e.g. Ballarat, Australia"></label>' +
+      '<label class="field"><span>What time should your brief be ready?</span><select data-field="time">' +
+        times().map(function(t){ return '<option'+(t === state.time ? ' selected' : '')+'>'+t+'</option>'; }).join('') + '</select></label>' +
+      '<div class="field"><span class="legend">On which days?</span>' + seg('days', [{v:'every', label:'Every day'}, {v:'week', label:'Weekdays only'}]) + '</div>';
+  },
+
+  function interests(){
+    var html = '<h1 tabindex="-1">What would you like in your brief?</h1>' +
+      '<p class="lead">Tap everything that sounds good. Most people choose between four and seven.</p>';
+    GROUPS.forEach(function(g){
+      html += '<h2 class="group-title">'+esc(g.title)+'</h2><div class="chips">' +
+        INTERESTS.filter(function(it){ return it.g === g.id; }).map(chip).join('') + '</div>' +
+        (g.hint ? '<p class="hint">'+esc(g.hint)+'</p>' : '');
+    });
+    html += '<h2 class="group-title">Something else?</h2>' +
+      (state.custom.length ? '<div class="chips" style="margin-bottom:12px">' + state.custom.map(function(c){ return chip(byId(c.id)); }).join('') + '</div>' : '') +
+      '<div class="addrow"><input type="text" id="customIn" maxlength="60" aria-label="Add your own interest" placeholder="e.g. knitting, Formula 1, my local team"><button type="button" class="btn ghost" data-act="addCustom">Add</button></div>' +
+      '<p class="hint">Type anything you like and press Add. You can add as many as you want.</p>' +
+      '<div class="panel" style="margin-top:28px"><span class="legend">Should your assistant add a surprise or two?</span>' +
+      '<p class="hint" style="margin:0 0 12px">If it already knows you from past chats, it can add one or two things it thinks you would love.</p>' +
+      seg('extras', [{v:'yes', label:'Yes please'}, {v:'no', label:'No, only what I picked'}]) + '</div>';
+    return html;
+  },
+
+  function rate(){
+    return '<h1 tabindex="-1">What matters most?</h1>' +
+      '<p class="lead">Tell us how much you care about each one. The things you care about most go at the top of your brief and get the most room.</p>' +
+      chosen().map(function(it){
+        var r = state.rate[it.id] || 2;
+        return '<div class="rate-card"><div class="rate-head"><span class="ico" aria-hidden="true">'+it.icon+'</span>'+esc(it.name)+'</div>' +
+          '<div class="seg" role="group" aria-label="How much '+esc(it.name)+' matters to you">' +
+          [[1,'A little'],[2,'Quite a bit'],[3,'A lot']].map(function(o){
+            return '<button type="button" data-act="rate" data-id="'+esc(it.id)+'" data-v="'+o[0]+'" aria-pressed="'+(r === o[0])+'">'+o[1]+'</button>';
+          }).join('') + '</div>' +
+          '<label class="note"><span>Anything in particular? <span class="opt">(optional)</span></span>' +
+          '<input type="text" data-note="'+esc(it.id)+'" maxlength="160" value="'+esc(state.notes[it.id] || '')+'" placeholder="'+esc(it.ask || 'e.g. anything you would like it to focus on')+'"></label></div>';
+      }).join('');
+  },
+
+  function look(){
+    return '<h1 tabindex="-1">Pick a colour vibe</h1>' +
+      '<p class="lead">Choose the look you would enjoy waking up to. The sketch below changes as you tap.</p>' +
+      '<div class="look"><div><div class="vibes">' + VIBES.map(function(v){
+        return '<button type="button" class="vibe" data-act="set" data-k="vibe" data-v="'+v.id+'" aria-pressed="'+(state.vibe === v.id)+'">' +
+          '<span class="sw" style="background:'+v.bg+'" aria-hidden="true"><i style="background:'+v.accent+'"></i><i style="background:'+v.ink+';width:100%"></i><i style="background:'+v.soft+';width:65%"></i></span>' +
+          '<span><b>'+esc(v.name)+'</b><small>'+esc(v.desc)+'</small></span></button>';
+      }).join('') +
+      '<button type="button" class="vibe" data-act="set" data-k="vibe" data-v="surprise" aria-pressed="'+(state.vibe === 'surprise')+'"><span class="sw q" aria-hidden="true">🎲</span><span><b>Surprise me</b><small>Let the assistant choose something that suits me.</small></span></button>' +
+      '<button type="button" class="vibe" data-act="set" data-k="vibe" data-v="own" aria-pressed="'+(state.vibe === 'own')+'"><span class="sw q" aria-hidden="true">🎨</span><span><b>My own idea</b><small>Describe the colours in your own words.</small></span></button>' +
+      '</div>' +
+      '<label class="field" id="ownField"'+(state.vibe === 'own' ? '' : ' hidden')+'><span>Describe your colours</span><input type="text" data-field="ownVibe" maxlength="160" value="'+esc(state.ownVibe)+'" placeholder="e.g. navy and gold, like my football team"></label>' +
+      '<div class="field"><span class="legend">Text size</span>' + seg('size', [{v:'std', label:'Standard'}, {v:'big', label:'Larger', sub:'Easier on the eyes'}]) + '</div>' +
+      '</div><div class="look-side"><h2>How yours could look</h2><div class="preview-wrap" id="preview"></div><p class="cap" id="previewCap"></p></div></div>';
+  },
+
+  function voice(){
+    var opts = function(map){ return Object.keys(map).map(function(k){ return {v:k, label:map[k].label, sub:map[k].sub}; }); };
+    return '<h1 tabindex="-1">How should it sound?</h1>' +
+      '<p class="lead">Last one. Choose the voice and the length that suit your mornings.</p>' +
+      '<div class="field"><span class="legend">The voice</span>' + seg('tone', opts(TONES), 'stack') + '</div>' +
+      '<div class="field"><span class="legend">The length</span>' + seg('length', opts(LENGTHS), 'stack') + '</div>' +
+      '<label class="field"><span>Anything you never want to see? <span class="opt">(optional)</span></span><input type="text" data-field="leave" maxlength="200" value="'+esc(state.leave)+'" placeholder="e.g. politics, celebrity gossip, adverts"></label>';
+  },
+
+  function result(){
+    var name = clean(state.name), ai = AIS[state.ai], can = !!ai.base;
+    var steps;
+    if(state.ai === 'other') steps = [
+      '<strong>Tap the big button.</strong> It copies your instructions.',
+      '<strong>Open your AI assistant</strong> and start a new chat.',
+      '<strong>Paste and send.</strong> Tap the message box, choose Paste, then press send. It will make today\'s brief, then help you get it every morning.'];
+    else steps = [
+      '<strong>Press the big button.</strong> It copies your instructions and opens '+ai.name+' in a new tab. Sign in if it asks.',
+      ai.q ? '<strong>Send the message.</strong> Your instructions should already be sitting in the message box. If the box is empty, click in it and paste (Ctrl+V on a computer, or press and hold on a phone), then press send.'
+           : '<strong>Paste and send.</strong> Click in the message box and paste (Ctrl+V on a computer, or press and hold on a phone), then press send.',
+      '<strong>Follow along.</strong> '+ai.name+' uses what it already knows about you, makes today\'s brief on the spot, then walks you through getting it every morning.'];
+    return '<h1 tabindex="-1">Your instructions are ready'+(name ? ', '+esc(name) : '')+'</h1>' +
+      '<p class="lead">We have turned your answers into a message for '+(state.ai === 'other' ? 'an AI assistant' : esc(ai.name))+'. Hand it over and it does the rest.</p>' +
+      '<div class="panel">' +
+        '<ol class="todo" style="margin-top:0">' + steps.map(function(t){ return '<li><span>'+t+'</span></li>'; }).join('') + '</ol>' +
+        '<div class="actions">' +
+        (can ? '<a class="btn big" id="openBtn" data-act="open" target="_blank" rel="noopener" href="'+ai.base+'">Copy and open '+esc(ai.name)+'</a>' +
+               '<button type="button" class="btn ghost" data-act="copy">Just copy the instructions</button>'
+             : '<button type="button" class="btn big" data-act="copy">Copy my instructions</button>') +
+        '</div><p class="status" id="copyMsg" role="status" aria-live="polite"></p>' +
+        (state.ai === 'claude' ? '<p class="hint" style="text-align:center;margin-bottom:0">Prefer the Claude app? Press the button anyway, then open the app, start a new chat and paste.</p>' : '') +
+      '</div>' +
+      '<details id="aiPick"'+(state.ai === 'claude' ? '' : ' open')+'><summary>Using a different assistant?</summary><div style="padding:0 20px 20px">' +
+        seg('ai', Object.keys(AIS).map(function(k){ return {v:k, label:AIS[k].label}; })) +
+        '<p class="hint" style="margin-bottom:0">This guide was built around Claude, but the instructions work with any of them.</p></div></details>' +
+      '<details><summary>Read the instructions first</summary><pre id="promptOut"></pre></details>' +
+      '<div class="panel"><h2 style="margin-top:0">Good to know</h2><ul class="tips">' +
+        '<li><strong>Arriving on its own.</strong> For your brief to turn up by itself each morning, most assistants need a paid plan. Without one you can still ask for your brief whenever you like. Your assistant will tell you what it can do.</li>' +
+        '<li><strong>It uses what it knows.</strong> If your assistant remembers you from past chats, it will use that to make the brief more personal, then tell you what it used so you can correct it.</li>' +
+        (state.ai === 'claude' ? '<li><strong>Chat or Cowork?</strong> Start in an ordinary chat. When it is time to make it daily, Claude may point you to Cowork, which is where scheduled tasks live.</li>' : '') +
+        '<li><strong>Changing it later.</strong> Just say what you want in plain words, such as "move the weather to the top", "make it shorter" or "add a section on cricket".</li>' +
+        '<li><strong>It only reads.</strong> Your instructions tell the assistant never to send, buy or change anything for you.</li>' +
+        '<li><strong>Give it a week.</strong> Most people ask for two or three small changes in the first few days. That is normal, and it is how the brief becomes yours.</li>' +
+      '</ul></div>' +
+      '<div class="endlinks"><button type="button" class="linkbtn" data-act="edit">Change my answers</button><button type="button" class="linkbtn" data-act="restart">Start again from scratch</button></div>';
+  }
+];
+
+function chip(it){
+  return '<button type="button" class="chip" data-act="pick" data-id="'+esc(it.id)+'" aria-pressed="'+(state.picks.indexOf(it.id) > -1)+'"><span class="ico" aria-hidden="true">'+it.icon+'</span><span>'+esc(it.name)+'</span></button>';
+}
+
+/* ---------- drawing the page ---------- */
+
+var backBtn = document.getElementById('backBtn'), nextBtn = document.getElementById('nextBtn'),
+    nav = document.getElementById('nav'), navMsg = document.getElementById('navMsg'),
+    progress = document.getElementById('progress'), progressText = document.getElementById('progressText'),
+    bar = document.getElementById('bar');
+
+function render(focusHeading){
+  if(state.step > 1 && state.step !== 2 && !state.picks.length) state.step = 2;
+  view.innerHTML = views[state.step]();
+  navMsg.textContent = '';
+  var inQ = state.step >= 1 && state.step <= LAST_Q;
+  progress.hidden = !inQ;
+  if(inQ){
+    progressText.textContent = 'Step ' + state.step + ' of ' + LAST_Q + ': ' + STEP_NAMES[state.step];
+    Array.prototype.forEach.call(bar.children, function(el, i){ el.className = i < state.step ? 'on' : ''; });
+  }
+  nav.hidden = state.step === RESULT;
+  backBtn.hidden = state.step === 0;
+  nextBtn.textContent = state.step === 0 ? "Let's start" : state.step === LAST_Q ? 'Create my instructions' : 'Next';
+  if(state.step === 4) refreshLook();
+  if(state.step === RESULT) refreshResult();
+  if(focusHeading){
+    window.scrollTo(0, 0);
+    var h = view.querySelector('h1');
+    if(h) h.focus({preventScroll:true});
+  }
+}
+function go(step){ state.step = step; save(); render(true); }
+
+function refreshLook(){
+  var p = document.getElementById('preview');
+  if(!p) return;
+  p.innerHTML = myPreview();
+  document.getElementById('ownField').hidden = state.vibe !== 'own';
+  document.getElementById('previewCap').textContent = vibe()
+    ? 'A rough sketch with your sections in order. The real thing will have real words.'
+    : 'Your assistant will choose the colours, so yours will look different from this sketch.';
+}
+function refreshResult(){
+  var prompt = buildPrompt(), ai = AIS[state.ai];
+  document.getElementById('promptOut').textContent = prompt;
+  var open = document.getElementById('openBtn');
+  if(open){
+    var url = ai.q ? ai.q + encodeURIComponent(prompt) : ai.base;
+    open.href = url.length > MAX_URL ? ai.base : url;
+  }
+}
+
+function copyPrompt(){
+  var text = buildPrompt(), msg = document.getElementById('copyMsg');
+  var done = function(ok){
+    if(msg) msg.textContent = ok ? 'Copied. Now paste it into your assistant.' : 'Could not copy automatically. The instructions are selected below: copy them (Ctrl+C), then paste into your assistant.';
+    if(ok) return;
+    var out = document.getElementById('promptOut');
+    if(!out) return;
+    out.parentNode.open = true;
+    var range = document.createRange(); range.selectNodeContents(out);
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  };
+  var fallback = function(){
+    try{
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta); done(ok);
+    }catch(e){ done(false); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function(){ done(true); }, fallback);
+  else fallback();
+}
+
+/* ---------- taps and typing ---------- */
+
+var actions = {
+  next: function(){
+    if(state.step === 2 && !state.picks.length){ navMsg.textContent = 'Choose at least one thing to carry on.'; return; }
+    go(Math.min(state.step + 1, RESULT));
+  },
+  back: function(){ go(Math.max(state.step - 1, 0)); },
+  edit: function(){ go(1); },
+  restart: function(){
+    if(!window.confirm('Clear all your answers and start again?')) return;
+    state = fresh(); go(0);
+  },
+  pick: function(t){
+    var id = t.dataset.id, i = state.picks.indexOf(id), it = byId(id);
+    if(i > -1){
+      state.picks.splice(i, 1);
+      if(it && it.custom){
+        state.custom = state.custom.filter(function(c){ return c.id !== id; });
+        delete state.rate[id]; delete state.notes[id];
+        save(); render(false);
+        var box = document.getElementById('customIn'); if(box) box.focus();
+        return;
+      }
+    }else state.picks.push(id);
+    t.setAttribute('aria-pressed', i === -1);
+    navMsg.textContent = '';
+    save();
+  },
+  addCustom: function(){
+    var box = document.getElementById('customIn'), name = clean(box.value);
+    if(!name){ box.focus(); return; }
+    var id = 'own' + Date.now();
+    state.custom.push({id:id, name:name}); state.picks.push(id);
+    save(); render(false);
+    document.getElementById('customIn').focus();
+  },
+  rate: function(t){
+    state.rate[t.dataset.id] = +t.dataset.v;
+    press(t); save();
+  },
+  set: function(t){
+    var k = t.dataset.k;
+    state[k] = t.dataset.v;
+    save();
+    if(k === 'ai'){
+      render(false);
+      document.getElementById('aiPick').open = true;
+      var again = view.querySelector('[data-k="ai"][aria-pressed="true"]'); if(again) again.focus();
+      return;
+    }
+    press(t);
+    if(k === 'vibe' || k === 'size') refreshLook();
+    if(k === 'vibe' && state.vibe === 'own'){ var f = view.querySelector('[data-field="ownVibe"]'); if(f) f.focus(); }
+  },
+  copy: copyPrompt,
+  open: copyPrompt
+};
+function press(t){
+  var group = t.closest('.seg, .vibes');
+  Array.prototype.forEach.call(group.querySelectorAll('[data-act="'+t.dataset.act+'"]'), function(b){ b.setAttribute('aria-pressed', b === t); });
+}
+
+document.addEventListener('click', function(e){
+  var t = e.target.closest('[data-act]');
+  if(t && actions[t.dataset.act]) actions[t.dataset.act](t);
+});
+document.addEventListener('input', function(e){
+  var d = e.target.dataset;
+  if(d.field){ state[d.field] = e.target.value; save(); }
+  if(d.note){ state.notes[d.note] = e.target.value; save(); }
+});
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+  e.preventDefault();
+  if(e.target.id === 'customIn') actions.addCustom();
+});
+
+render(false);
+})();
+</script>
+</body>
+</html>
